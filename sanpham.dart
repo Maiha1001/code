@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import 'chitietsp.dart';
 import 'giaodien.dart';
 import 'giohang.dart';
 import 'tongquan.dart';
@@ -45,7 +47,7 @@ Widget productImage(String url) {
         ? child
         : const Center(child: CircularProgressIndicator(strokeWidth: 2)),
     errorBuilder: (context, error, stack) =>
-        const Icon(Icons.image_not_supported, size: 32, color: Colors.grey),
+        const Icon(Icons.image_not_supported, size: 36, color: Colors.grey),
   );
 }
 
@@ -60,53 +62,100 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Container(
-              width: double.infinity,
-              color: isDark(context) ? Colors.grey.shade800 : Colors.grey.shade100,
-              child: productImage(product.image),
-            ),
+    final isDarkMode = isDark(context);
+
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ProductDetailScreen(product: product),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(10, 8, 4, 4),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  product.name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        product.price,
-                        style: const TextStyle(
-                          color: Colors.red,
-                          fontWeight: FontWeight.w600,
-                        ),
+        );
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        elevation: 3,
+        shadowColor: Colors.black26,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Column( 
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Stack(
+                children: [
+                  Hero(
+                    tag: 'product-img-${product.name}',
+                    child: Container(
+                      width: double.infinity,
+                      color: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade100,
+                      child: productImage(product.image),
+                    ),
+                  ),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: const [
+                          Icon(Icons.star, color: Colors.amber, size: 12),
+                          SizedBox(width: 2),
+                          Text('4.9', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                        ],
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.add_shopping_cart, size: 20),
-                      onPressed: onAdd,
-                    ),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        product.price,
+                        style: const TextStyle(
+                          color: Colors.redAccent,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      InkWell(
+                        onTap: onAdd,
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF1E3A8A),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.add, size: 16, color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -134,7 +183,6 @@ class _ProductListScreenState extends State<ProductListScreen> {
     super.dispose();
   }
 
-  // Danh sách sản phẩm được lọc theo từ khóa & danh mục
   List<Product> get filtered => products
       .where((p) =>
           (category == 'cat_all' || p.category == category) &&
@@ -146,22 +194,28 @@ class _ProductListScreenState extends State<ProductListScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) => searchFocus.requestFocus());
   }
 
-  // Widget hiển thị Trang chủ sản phẩm
   Widget buildHome() {
     final list = filtered;
     return Column(
       children: [
-        // Thanh tìm kiếm
+        // Thanh tìm kiếm nâng cấp
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
           child: TextField(
             focusNode: searchFocus,
             onChanged: (v) => setState(() => keyword = v.trim()),
             decoration: InputDecoration(
               hintText: tr('search_hint'),
-              prefixIcon: const Icon(Icons.search),
+              prefixIcon: const Icon(Icons.search, color: Color(0xFF1E3A8A)),
+              suffixIcon: keyword.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear, size: 18),
+                      onPressed: () => setState(() => keyword = ''),
+                    )
+                  : null,
               filled: true,
-              contentPadding: EdgeInsets.zero,
+              fillColor: isDark(context) ? Colors.grey[850] : Colors.grey[100],
+              contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
                 borderSide: BorderSide.none,
@@ -170,7 +224,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
           ),
         ),
 
-        // Thanh chọn danh mục (Categories)
+        // Thanh chọn danh mục
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -178,12 +232,14 @@ class _ProductListScreenState extends State<ProductListScreen> {
             children: categories
                 .map((c) => Padding(
                       padding: const EdgeInsets.only(right: 8),
-                      child: FilterChip(
+                      child: ChoiceChip(
                         label: Text(tr(c)),
                         selected: category == c,
-                        showCheckmark: false,
-                        selectedColor: const Color(0xFF1E3A8A),
-                        labelStyle: TextStyle(color: category == c ? Colors.white : null),
+                        selectedColor: const Color.fromARGB(255, 8, 18, 161),
+                        labelStyle: TextStyle(
+                          color: category == c ? Colors.white : null,
+                          fontWeight: category == c ? FontWeight.bold : FontWeight.normal,
+                        ),
                         onSelected: (_) => setState(() => category = c),
                       ),
                     ))
@@ -191,17 +247,28 @@ class _ProductListScreenState extends State<ProductListScreen> {
           ),
         ),
 
-        // Lưới hiển thị danh sách sản phẩm
+        const SizedBox(height: 8),
+
+        // Lưới sản phẩm
         Expanded(
           child: list.isEmpty
-              ? Center(child: Text(tr('no_product')))
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.search_off, size: 60, color: Colors.grey),
+                      const SizedBox(height: 8),
+                      Text(tr('no_product'), style: const TextStyle(color: Colors.grey)),
+                    ],
+                  ),
+                )
               : GridView.builder(
                   padding: const EdgeInsets.all(16),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                    mainAxisExtent: 250,
+                    crossAxisSpacing: 14,
+                    mainAxisSpacing: 14,
+                    mainAxisExtent: 240,
                   ),
                   itemCount: list.length,
                   itemBuilder: (context, i) => ProductCard(
@@ -223,26 +290,25 @@ class _ProductListScreenState extends State<ProductListScreen> {
       listenable: langNotifier,
       builder: (context, _) => Scaffold(
         appBar: AppBar(
+          elevation: 2,
           backgroundColor: const Color(0xFF1E3A8A),
           foregroundColor: Colors.white,
-          title: Text(tab == 2 ? tr('settings') : 'ShopEasy'),
+          title: Text(
+            tab == 2 ? tr('settings') : 'ShopEasy',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
           actions: tab != 0
               ? null
               : [
-                  // Nút chuyển sang màn hình Tổng quan (Dashboard)
                   IconButton(
                     icon: const Icon(Icons.dashboard_outlined),
                     tooltip: tr('dashboard_title'),
                     onPressed: () => go(context, const DashboardScreen()),
                   ),
-
-                  // Nút con trỏ tìm kiếm
                   IconButton(
                     icon: const Icon(Icons.search),
                     onPressed: focusSearch,
                   ),
-
-                  // Nút Giỏ hàng có Badge báo số lượng
                   IconButton(
                     icon: Badge(
                       label: Text('$cartCount'),
@@ -263,7 +329,16 @@ class _ProductListScreenState extends State<ProductListScreen> {
           index: tab,
           children: [
             buildHome(),
-            Center(child: Text(tr('tab_favorite'))),
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.favorite_border, size: 64, color: Colors.grey),
+                  const SizedBox(height: 12),
+                  Text(tr('tab_favorite'), style: const TextStyle(fontSize: 16, color: Colors.grey)),
+                ],
+              ),
+            ),
             const SettingsScreen(),
           ],
         ),
@@ -271,9 +346,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
           selectedIndex: tab,
           onDestinationSelected: (i) => setState(() => tab = i),
           destinations: [
-            NavigationDestination(icon: const Icon(Icons.home), label: tr('tab_home')),
-            NavigationDestination(icon: const Icon(Icons.favorite), label: tr('tab_favorite')),
-            NavigationDestination(icon: const Icon(Icons.person), label: tr('tab_account')),
+            NavigationDestination(icon: const Icon(Icons.home_outlined), selectedIcon: const Icon(Icons.home), label: tr('tab_home')),
+            NavigationDestination(icon: const Icon(Icons.favorite_outline), selectedIcon: const Icon(Icons.favorite), label: tr('tab_favorite')),
+            NavigationDestination(icon: const Icon(Icons.person_outline), selectedIcon: const Icon(Icons.person), label: tr('tab_account')),
           ],
         ),
       ),

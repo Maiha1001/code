@@ -6,10 +6,10 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final stats = [
-      {'title': 'Đơn hàng', 'value': '128', 'icon': Icons.shopping_bag, 'color': Colors.blue},
-      {'title': 'Doanh thu', 'value': '45.2M', 'icon': Icons.attach_money, 'color': Colors.green},
-      {'title': 'Khách hàng', 'value': '1,240', 'icon': Icons.people, 'color': Colors.orange},
-      {'title': 'Sản phẩm', 'value': '86', 'icon': Icons.inventory, 'color': Colors.purple},
+      {'title': 'Đơn hàng', 'value': '128', 'icon': Icons.shopping_bag_outlined, 'color': Colors.blue},
+      {'title': 'Doanh thu', 'value': '45.2M', 'icon': Icons.attach_money_outlined, 'color': Colors.green},
+      {'title': 'Khách hàng', 'value': '1,240', 'icon': Icons.people_outline, 'color': Colors.orange},
+      {'title': 'Sản phẩm', 'value': '86', 'icon': Icons.inventory_2_outlined, 'color': Colors.purple},
     ];
 
     final orders = [
@@ -30,7 +30,6 @@ class DashboardScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Các thẻ thống kê (Grid 2x2)
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -38,23 +37,25 @@ class DashboardScreen extends StatelessWidget {
                 crossAxisCount: 2,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
-                childAspectRatio: 1.3,
+                childAspectRatio: 1.35,
               ),
               itemCount: stats.length,
               itemBuilder: (context, i) {
                 final item = stats[i];
+                final color = item['color'] as Color;
                 return Card(
                   elevation: 2,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   child: Padding(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(14),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         CircleAvatar(
-                          backgroundColor: (item['color'] as Color).withAlpha(40),
-                          child: Icon(item['icon'] as IconData, color: item['color'] as Color),
+                          radius: 20,
+                          backgroundColor: color.withValues(alpha: 0.15),
+                          child: Icon(item['icon'] as IconData, color: color, size: 22),
                         ),
                         const Spacer(),
                         Text(
@@ -63,7 +64,7 @@ class DashboardScreen extends StatelessWidget {
                         ),
                         Text(
                           item['title'] as String,
-                          style: const TextStyle(color: Colors.grey),
+                          style: const TextStyle(color: Colors.grey, fontSize: 13),
                         ),
                       ],
                     ),
@@ -72,8 +73,6 @@ class DashboardScreen extends StatelessWidget {
               },
             ),
             const SizedBox(height: 24),
-
-            // Tiêu đề đơn hàng gần đây
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -88,40 +87,41 @@ class DashboardScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-
-            // Danh sách đơn hàng
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: orders.length,
-              separatorBuilder: (context, index) => const Divider(),
-              itemBuilder: (context, index) {
-                final order = orders[index];
-                return ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const CircleAvatar(
-                    backgroundColor: Color(0xFFF1F5F9),
-                    child: Icon(Icons.receipt_long, color: Color(0xFF1E3A8A)),
-                  ),
-                  title: Text(order['id'] as String, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text(order['customer'] as String),
-                  trailing: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: (order['color'] as Color).withAlpha(40),
-                      borderRadius: BorderRadius.circular(12),
+            Card(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: orders.length,
+                separatorBuilder: (context, index) => const Divider(height: 1),
+                itemBuilder: (context, index) {
+                  final order = orders[index];
+                  final statusColor = order['color'] as Color;
+                  return ListTile(
+                    leading: const CircleAvatar(
+                      backgroundColor: Color(0xFFF1F5F9),
+                      child: Icon(Icons.receipt_long, color: Color(0xFF1E3A8A)),
                     ),
-                    child: Text(
-                      order['status'] as String,
-                      style: TextStyle(
-                        color: order['color'] as Color,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
+                    title: Text(order['id'] as String, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text(order['customer'] as String),
+                    trailing: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: statusColor.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        order['status'] as String,
+                        style: TextStyle(
+                          color: statusColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ],
         ),
